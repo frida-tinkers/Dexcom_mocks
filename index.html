@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galaxy S26 Ultra – Dexcom G7 walkthrough</title>
+<style>
+:root{
+  --bg:#eef0f3; --fg:#1a1d22; --muted:#596170; --card:#ffffff; --line:#d5d9e0; --accent:#0b7a55; --accent-fg:#ffffff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#121417; --fg:#e8ebf0; --muted:#98a1ae; --card:#1c1f24; --line:#32363d; --accent:#4ec28f; --accent-fg:#0c1a13; color-scheme: dark; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+.wrap{max-width:980px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start}
+.scaler{flex:none}
+.coach{flex:1 1 280px;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.coach h1{font-size:18px;margin:0 0 4px;font-weight:650}
+.coach .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.coach h2{font-size:14px;margin:14px 0 4px;font-weight:650}
+.coach p{margin:0;font-size:14px}
+.coach .btns{display:flex;gap:8px;margin-top:16px}
+.coach button{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+.coach button.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.coach button:focus-visible,.screen :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.coach .note{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+
+/* phone */
+.phone{width:380px;height:800px;background:#0b0b0d;border-radius:46px;padding:10px;transform-origin:top left;box-shadow:0 0 0 2px #2a2c31 inset}
+.screen{position:relative;width:100%;height:100%;border-radius:37px;overflow:hidden;display:flex;flex-direction:column;background:#fff;color:#111;font-family:Roboto,"Segoe UI",system-ui,sans-serif;font-size:15px}
+.screen.dk{color:#fff}
+.hole{position:absolute;top:10px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#000;z-index:5}
+.status{height:34px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:12.5px;font-weight:600;z-index:4;position:relative}
+.status .r{display:flex;gap:6px;align-items:center}
+.status .batt{width:20px;height:10px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.status .batt::after{content:"";position:absolute;left:1px;top:1px;bottom:1px;width:70%;background:currentColor;border-radius:1px}
+.body{flex:1;overflow-y:auto;position:relative;min-height:0}
+.nav{height:46px;flex:none;display:flex;justify-content:space-around;align-items:center;padding:0 40px}
+.nav button{background:none;border:0;color:inherit;opacity:.8;width:60px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+.nav .hm{width:16px;height:16px;border:2px solid currentColor;border-radius:50%}
+.nav .rc{display:flex;gap:3px}.nav .rc i{display:block;width:2px;height:14px;background:currentColor;border-radius:1px}
+
+/* home screen */
+.home{background:linear-gradient(165deg,#2b4a6b 0%,#5a3d7a 55%,#c4607a 100%)}
+.home .body{padding:18px 18px 0;display:flex;flex-direction:column}
+.clock{margin:26px 0 30px}
+.clock .t{font-size:64px;font-weight:300;letter-spacing:-1px;line-height:1}
+.clock .d{font-size:15px;opacity:.9;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px 8px}
+.app{background:none;border:0;color:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;cursor:pointer;padding:0}
+.ico{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;font-weight:700}
+.dock{margin-top:auto;margin-bottom:12px;background:rgba(255,255,255,.18);border-radius:26px;padding:12px 10px;display:grid;grid-template-columns:repeat(4,1fr)}
+.dock .app{font-size:0}
+
+/* generic app chrome */
+.bar{padding:6px 18px 10px;display:flex;align-items:center;gap:10px}
+.bar h3{margin:0;font-size:21px;font-weight:600}
+.big{font-size:32px;font-weight:500;padding:34px 22px 14px;margin:0;line-height:1.15}
+.row{display:flex;align-items:center;gap:14px;padding:14px 22px;width:100%;background:none;border:0;border-bottom:1px solid #eceef1;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.row .tx{flex:1;min-width:0}
+.row .tt{font-size:16px}
+.row .ss{font-size:12.5px;color:#6b7280;margin-top:1px}
+.row .chev{color:#9aa0a8;font-size:18px}
+.row.static{cursor:default}
+.sect{padding:16px 22px 6px;font-size:13px;color:#0a6bd6;font-weight:600}
+.tg{width:44px;height:24px;border-radius:12px;background:#b9bec6;position:relative;flex:none;transition:background .15s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:#2f7cf6}.tg.on::after{left:23px}
+.card{margin:10px 16px;background:#f3f4f6;border-radius:20px;overflow:hidden}
+.card .row:last-child{border-bottom:0}
+.btn{display:block;margin:18px 22px;padding:14px;border-radius:26px;border:0;background:#0b7a55;color:#fff;font:inherit;font-weight:600;text-align:center;cursor:pointer;width:calc(100% - 44px)}
+.btn.sec{background:#e6f3ed;color:#0b5c40}
+.warn{margin:10px 16px;padding:12px 14px;border-radius:14px;background:#fff4e0;color:#7a4a00;font-size:13px}
+.field{margin:10px 22px}
+.field label{display:block;font-size:12.5px;color:#6b7280;margin-bottom:4px}
+.field input{width:100%;font:inherit;padding:12px;border:1px solid #c9ced6;border-radius:10px;background:#fff;color:#111}
+.para{padding:6px 22px;font-size:14px;color:#3a4049}
+.toast{position:absolute;left:20px;right:20px;bottom:64px;background:#222;color:#fff;padding:12px 16px;border-radius:14px;font-size:13.5px;z-index:6;text-align:center}
+
+/* G7 */
+.g7tabs{flex:none;display:flex;border-top:1px solid #e3e6ea;background:#fff}
+.g7tabs button{flex:1;background:none;border:0;padding:9px 0 8px;font:inherit;font-size:11.5px;color:#6b7280;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.g7tabs button b{font-size:18px;font-weight:400}
+.g7tabs button.act{color:#0b7a55;font-weight:600}
+.gl{text-align:center;padding:8px 0 0}
+.gl .n{font-size:84px;font-weight:300;line-height:1;letter-spacing:-2px}
+.gl .u{font-size:13px;color:#6b7280;margin-top:2px}
+.gl .tr{font-size:15px;color:#0b7a55;margin-top:8px}
+.graph{margin:10px 16px;border:1px solid #e3e6ea;border-radius:16px;padding:8px}
+.chips{display:flex;justify-content:center;gap:6px;padding:4px 16px}
+.chips span{padding:5px 12px;border-radius:14px;background:#eef0f3;font-size:12.5px}
+.chips span.a{background:#0b7a55;color:#fff}
+.g7mark{width:30px;height:30px;border-radius:50%;background:#0b7a55;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.fl{display:flex;align-items:center;gap:12px;padding:12px 22px;border-bottom:1px solid #eceef1}
+.av{width:36px;height:36px;border-radius:50%;background:#dbe9e3;color:#0b5c40;display:flex;align-items:center;justify-content:center;font-weight:600}
+.pill{font-size:12px;background:#fff4e0;color:#7a4a00;border-radius:10px;padding:2px 8px}
+.viewfinder{background:#000;flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:40px}
+.shutter{width:64px;height:64px;border-radius:50%;border:4px solid #fff;background:none}
+@media (prefers-reduced-motion: reduce){.tg,.tg::after{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="scaler" id="scaler">
+    <div class="phone" id="phone">
+      <div class="screen" id="screen"></div>
+    </div>
+  </div>
+  <aside class="coach" aria-live="polite">
+    <h1>Galaxy S26 Ultra · Dexcom G7</h1>
+    <p class="sub">Tap through the phone like a patient would.</p>
+    <h2 id="ct"></h2>
+    <p id="cx"></p>
+    <div class="btns">
+      <button class="pri" id="bHome">Go to home screen</button>
+      <button id="bReset">Start over</button>
+    </div>
+    <p class="note">Draft built from Dexcom's public help pages, not from live app screenshots. Screen wording and layout may differ from the current app, so compare against the real app before training with it.</p>
+  </aside>
+</div>
+
+<script>
+const fresh = () => ({
+  screen:'home', stack:[], tab:'home',
+  bt:true, notif:true, loc:true, nearby:true, batt:'Optimized',
+  intro:false, invited:false, shareOn:false, followers:[],
+  nick:'', email:'', gr:true, low:true, toast:''
+});
+let S = fresh();
+let toastTimer = null;
+
+const COACH = {
+  home:['Home screen','Start here. Open the Dexcom G7 app, or open Settings to check the phone itself (Bluetooth, battery, permissions).'],
+  camera:['Camera','Just a placeholder app. Use the back button to return.'],
+  notes:['Notes','Just a placeholder app. Use the back button to return.'],
+  g7:['G7 app: Home','Glucose reading and trend. Banners at the top show phone settings that can stop readings or alerts. Tap Connections at the bottom to find Share.'],
+  'g7-connections':['G7 app: Connections','Under Available Connections, tap Share to set up following.'],
+  'share-intro':['Share: first-time intro','The first time in, the patient reads the info screen and taps Next.'],
+  share:['Share','Until a follower invite has been sent, there is no Share toggle. Once an invite is sent, the toggle appears. The follower does not have to accept first.'],
+  'share-invite':['Invite a follower','Enter a nickname and the follower\'s email address, then tap Next. Inviting yourself works too.'],
+  'share-follower':['Follower settings','Choose what the follower sees, then tap Send Invitation. The follower gets an email with an accept link and the Follow app download.'],
+  set:['Android Settings','Check Connections (Bluetooth), Battery, and Apps > Dexcom G7.'],
+  'set-conn':['Settings: Connections','Bluetooth must be on for readings.'],
+  'set-bt':['Settings: Bluetooth','Turn it off and go back to the G7 home screen to see what the patient would see.'],
+  'set-batt':['Settings: Battery','Open Background usage limits or go to Apps for the Dexcom G7 battery setting.'],
+  'set-apps':['Settings: Apps','Find Dexcom G7 in the list.'],
+  'set-app':['App info: Dexcom G7','Check Notifications, Permissions, and Battery. Battery limits can delay data sent to followers.'],
+  'set-app-batt':['App battery setting','Unrestricted is the safest choice for the G7 app. Optimized or Restricted can delay Share data.'],
+  'set-app-perm':['App permissions','Location and Nearby devices should be allowed, or alerts and readings can stop.']
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tg = (on, act, extra='') => `<span class="tg ${on?'on':''}" role="switch" aria-checked="${on}" tabindex="0" data-act="${act}" ${extra}></span>`;
+
+function go(name){ S.stack.push(S.screen); S.screen = name; render(); }
+function back(){ if(S.stack.length){ S.screen = S.stack.pop(); } else { S.screen='home'; } render(); }
+function toast(msg){ S.toast = msg; clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ S.toast=''; render(); }, 2600); }
+
+function rowNav(label, sub, go_){ return `<button class="row" data-go="${go_}"><div class="tx"><div class="tt">${label}</div>${sub?`<div class="ss">${sub}</div>`:''}</div><span class="chev">›</span></button>`; }
+function rowTg(label, sub, on, act){ return `<div class="row static"><div class="tx"><div class="tt">${label}</div>${sub?`<div class="ss">${sub}</div>`:''}</div>${tg(on,act)}</div>`; }
+function appBar(title){ return `<div class="bar"><h3>${title}</h3></div>`; }
+
+function warnings(){
+  const w = [];
+  if(!S.bt) w.push('Bluetooth is off. Turn it on to get glucose readings.');
+  if(!S.loc) w.push('Location permission is off. You won\'t get alerts or readings.');
+  if(!S.nearby) w.push('Nearby devices permission is off. The app can\'t find the sensor.');
+  if(!S.notif) w.push('Notifications are off for the G7 app.');
+  return w.map(t=>`<div class="warn">${t}</div>`).join('');
+}
+
+function g7Shell(inner){
+  const t = S.tab;
+  const tab = (id,ic,lb) => `<button class="${t===id?'act':''}" data-tab="${id}"><b>${ic}</b>${lb}</button>`;
+  return `<div style="display:flex;flex-direction:column;height:100%">
+    <div class="body">${inner}</div>
+    <div class="g7tabs">${tab('home','◔','Home')}${tab('connections','⇄','Connections')}${tab('alerts','🔔','Alerts')}${tab('settings','⚙','Settings')}</div>
+  </div>`;
+}
+
+function g7Home(){
+  const ok = S.bt && S.loc && S.nearby;
+  const pts = '10,62 40,58 70,55 100,52 130,50 160,48 190,50 220,49 250,47 280,46';
+  return `
+    <div class="bar"><div class="g7mark">G7</div><h3>Dexcom G7</h3></div>
+    ${warnings()}
+    <div class="gl">
+      <div class="n">${ok?'112':'--'}</div>
+      <div class="u">mg/dL</div>
+      <div class="tr">${ok?'→ Steady':'No readings'}</div>
+    </div>
+    <div class="graph">
+      <svg viewBox="0 0 290 110" width="100%" role="img" aria-label="Glucose graph, steady in range">
+        <rect x="0" y="25" width="290" height="60" fill="#e4f3ec"/>
+        <line x1="0" y1="25" x2="290" y2="25" stroke="#9fd2bb" stroke-dasharray="3 3"/>
+        <line x1="0" y1="85" x2="290" y2="85" stroke="#9fd2bb" stroke-dasharray="3 3"/>
+        ${ok?`<polyline points="${pts}" fill="none" stroke="#0b7a55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:''}
+      </svg>
+    </div>
+    <div class="chips"><span>1h</span><span>3h</span><span class="a">6h</span><span>12h</span><span>24h</span></div>
+    <div class="para" style="margin-top:14px;color:#6b7280;font-size:13px;text-align:center">15 Day Sensor · warm-up complete</div>`;
+}
+
+function g7Connections(){
+  return `
+    <div class="bar"><h3>Connections</h3></div>
+    <div class="sect">Available Connections</div>
+    <button class="row" data-act="open-share"><div class="tx"><div class="tt">Share</div><div class="ss">${S.invited?(S.shareOn?'On':'Off'):'Let followers see your glucose'}</div></div><span class="chev">›</span></button>
+    <button class="row" data-act="todo"><div class="tx"><div class="tt">Clarity</div><div class="ss">Glucose reports for you and your care team</div></div><span class="chev">›</span></button>`;
+}
+
+function g7Todo(name){
+  return `<div class="bar"><h3>${name}</h3></div><div class="para" style="color:#6b7280">This screen isn't built in this draft yet.</div>`;
+}
+
+function shareMain(){
+  const battWarn = (S.invited && S.shareOn && S.batt !== 'Unrestricted')
+    ? `<div class="warn">Battery limits on this phone can delay what followers see. Check the battery setting for the G7 app in Android Settings.</div>` : '';
+  if(!S.invited){
+    return `${appBar('Share')}
+      <div class="para">Invite someone to follow your glucose. They'll need the Dexcom Follow app.</div>
+      <button class="btn" data-go="share-invite">Invite Followers</button>`;
+  }
+  const fl = S.followers.map(f=>`<div class="fl"><div class="av">${esc((f.nick||'?')[0].toUpperCase())}</div><div style="flex:1;min-width:0"><div>${esc(f.nick)}</div><div style="font-size:12.5px;color:#6b7280;overflow:hidden;text-overflow:ellipsis">${esc(f.email)}</div></div><span class="pill">Invited</span></div>`).join('');
+  return `${appBar('Share')}
+    ${battWarn}
+    <div class="card">${rowTg('Share', S.shareOn?'Sending glucose to followers':'Not sharing', S.shareOn, 'tg-share')}</div>
+    <div class="sect">Followers</div>
+    ${fl}
+    <button class="btn sec" data-go="share-invite">Invite Followers</button>`;
+}
+
+function shareIntro(){
+  return `${appBar('Share')}
+    <div class="para">Share lets you send your glucose readings to up to 10 followers. Followers use the separate Dexcom Follow app.</div>
+    <div class="para">Your phone needs an internet connection and has to stay near your sensor for followers to get updates.</div>
+    <div class="para" style="font-size:13px;color:#6b7280">Followers should confirm readings in the G7 app before making treatment decisions.</div>
+    <button class="btn" data-act="intro-next">Next</button>`;
+}
+
+function shareInvite(){
+  return `${appBar('Invite Follower')}
+    <div class="field"><label for="in-nick">Nickname</label><input id="in-nick" data-in="nick" value="${esc(S.nick)}" autocomplete="off"></div>
+    <div class="field"><label for="in-email">Email address</label><input id="in-email" data-in="email" type="email" value="${esc(S.email)}" autocomplete="off"></div>
+    <button class="btn" data-act="invite-next">Next</button>`;
+}
+
+function shareFollower(){
+  return `${appBar('Follower settings')}
+    <div class="para">${esc(S.nick||'Your follower')} will see:</div>
+    <div class="card">
+      ${rowTg('Glucose graph','Show the trend graph',S.gr,'tg-gr')}
+      ${rowTg('Urgent Low alert','Alert when glucose is very low',S.low,'tg-low')}
+    </div>
+    <button class="btn" data-act="send-invite">Send Invitation</button>`;
+}
+
+/* Android settings */
+function sRow(ic,bg,t,s,g){ return `<button class="row" data-go="${g}"><div class="ico" style="width:36px;height:36px;border-radius:50%;font-size:17px;background:${bg}">${ic}</div><div class="tx"><div class="tt">${t}</div><div class="ss">${s}</div></div></button>`; }
+function setHome(){
+  return `<h2 class="big">Settings</h2>
+    ${sRow('📶','#2f7cf6','Connections','Bluetooth, Wi‑Fi, Flight mode','set-conn')}
+    ${sRow('🔋','#34a853','Battery','Background usage limits','set-batt')}
+    ${sRow('▦','#7b61ff','Apps','Default apps, app settings','set-apps')}`;
+}
+function setConn(){ return `<h2 class="big">Connections</h2>${rowNav('Bluetooth', S.bt?'On':'Off','set-bt')}${rowNav('Wi‑Fi','Connected','set-conn')}`; }
+function setBt(){ return `<h2 class="big">Bluetooth</h2><div class="card">${rowTg('On','',S.bt,'tg-bt')}</div>`; }
+function setBatt(){ return `<h2 class="big">Battery</h2>${rowNav('Background usage limits','Apps that can run in the background','set-apps')}${rowNav('Adaptive battery','On','set-batt')}`; }
+function setApps(){
+  return `<h2 class="big">Apps</h2>
+    <button class="row" data-go="set-app"><div class="g7mark">G7</div><div class="tx"><div class="tt">Dexcom G7</div></div></button>
+    <div class="row static"><div class="ico" style="width:36px;height:36px;border-radius:10px;font-size:18px;background:#2f7cf6">🌐</div><div class="tx"><div class="tt">Internet</div></div></div>
+    <div class="row static"><div class="ico" style="width:36px;height:36px;border-radius:10px;font-size:18px;background:#e58a00">📷</div><div class="tx"><div class="tt">Camera</div></div></div>`;
+}
+function setApp(){
+  const perms = (S.loc&&S.nearby&&S.notif)?'Location, Nearby devices, Notifications allowed':'Some permissions are off';
+  return `<h2 class="big">Dexcom G7</h2>
+    <div class="card">
+      ${rowTg('Notifications', S.notif?'Allowed':'Off', S.notif,'tg-notif')}
+      ${rowNav('Permissions', perms,'set-app-perm')}
+      ${rowNav('Battery', S.batt,'set-app-batt')}
+    </div>`;
+}
+function setAppBatt(){
+  const opt = (n,d) => `<button class="row" data-act="batt" data-val="${n}"><div class="tx"><div class="tt">${n}</div><div class="ss">${d}</div></div><span style="width:20px;height:20px;border-radius:50%;border:2px solid ${S.batt===n?'#2f7cf6':'#9aa0a8'};display:flex;align-items:center;justify-content:center">${S.batt===n?'<i style="width:10px;height:10px;border-radius:50%;background:#2f7cf6;display:block"></i>':''}</span></button>`;
+  return `<h2 class="big">Battery</h2>
+    ${opt('Unrestricted','No limits on background use. Uses more battery.')}
+    ${opt('Optimized','Limits background use based on how you use the app.')}
+    ${opt('Restricted','Limits background use. Notifications and data may be delayed.')}`;
+}
+function setAppPerm(){
+  return `<h2 class="big">Permissions</h2><div class="card">
+    ${rowTg('Location', S.loc?'Allowed':'Not allowed', S.loc,'tg-loc')}
+    ${rowTg('Nearby devices', S.nearby?'Allowed':'Not allowed', S.nearby,'tg-nearby')}
+    ${rowTg('Notifications', S.notif?'Allowed':'Not allowed', S.notif,'tg-notif')}
+  </div>`;
+}
+
+function homeScreen(){
+  const d = new Date();
+  const time = d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}).replace(/\s?(AM|PM)/i,'');
+  const date = d.toLocaleDateString([], {weekday:'long',month:'long',day:'numeric'});
+  const ap = (ic,bg,lb,go_,act) => `<button class="app" ${act?`data-act="${act}"`:`data-go="${go_}"`}><div class="ico" style="background:${bg}">${ic}</div>${lb}</button>`;
+  return `<div class="clock"><div class="t">${time}</div><div class="d">${date}</div></div>
+    <div class="grid">
+      ${ap('G7','#0b7a55','Dexcom G7','g7')}
+      ${ap('⚙','#5b6b7d','Settings','set')}
+      ${ap('📝','#e5a400','Notes','notes')}
+      ${ap('🛍','#2f7cf6','Play Store','', 'todo')}
+      ${ap('🖼','#e0568a','Gallery','', 'todo')}
+      ${ap('🌐','#6b52d9','Internet','', 'todo')}
+    </div>
+    <div class="dock">
+      ${ap('📞','#34a853','Phone','', 'todo')}
+      ${ap('💬','#2f7cf6','Messages','', 'todo')}
+      ${ap('📷','#e5483a','Camera','camera')}
+      ${ap('✉','#e58a00','Email','', 'todo')}
+    </div>`;
+}
+
+function body(){
+  switch(S.screen){
+    case 'home': return homeScreen();
+    case 'camera': return `<div class="viewfinder"><button class="shutter" aria-label="Take photo"></button></div>`;
+    case 'notes': return `<h2 class="big">Notes</h2><div class="card"><div class="row static"><div class="tx"><div class="tt">Grocery list</div><div class="ss">Eggs, spinach, coffee</div></div></div><div class="row static"><div class="tx"><div class="tt">Gym times</div><div class="ss">Tue and Thu, 6 pm</div></div></div></div>`;
+    case 'g7':
+      if(S.tab==='home') return g7Shell(g7Home());
+      if(S.tab==='connections') return g7Shell(g7Connections());
+      return g7Shell(g7Todo(S.tab==='alerts'?'Alerts':'Settings'));
+    case 'share-intro': return shareIntro();
+    case 'share': return shareMain();
+    case 'share-invite': return shareInvite();
+    case 'share-follower': return shareFollower();
+    case 'set': return setHome();
+    case 'set-conn': return setConn();
+    case 'set-bt': return setBt();
+    case 'set-batt': return setBatt();
+    case 'set-apps': return setApps();
+    case 'set-app': return setApp();
+    case 'set-app-batt': return setAppBatt();
+    case 'set-app-perm': return setAppPerm();
+  }
+  return '';
+}
+
+function render(){
+  const dark = (S.screen==='home' || S.screen==='camera');
+  const sc = $('#screen');
+  const now = new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}).replace(/\s?(AM|PM)/i,'');
+  const bg = S.screen==='home' ? 'home' : (S.screen==='camera' ? '' : '');
+  sc.className = 'screen ' + (dark?'dk ':'') + (S.screen==='home'?'home':'');
+  if(S.screen==='camera') sc.style.background = '#000'; else sc.style.background = '';
+  sc.innerHTML = `<div class="hole"></div>
+    <div class="status"><span>${now}</span><span class="r"><span>5G</span><span>▂▄▆</span><span class="batt"></span></span></div>
+    <div class="body">${body()}</div>
+    <div class="nav" style="${dark?'':'background:#fff'}">
+      <button data-act="recents" aria-label="Recent apps"><span class="rc"><i></i><i></i><i></i></span></button>
+      <button data-act="home" aria-label="Home"><span class="hm"></span></button>
+      <button data-act="back" aria-label="Back">‹</button>
+    </div>
+    ${S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:''}`;
+  // g7Shell nests its own body; flatten height handling
+  const key = (S.screen==='g7') ? (S.tab==='home'?'g7':'g7-'+S.tab) : S.screen;
+  const c = COACH[key] || COACH[S.screen] || ['',''];
+  $('#ct').textContent = c[0]; $('#cx').textContent = c[1];
+}
+
+function act(a, el){
+  switch(a){
+    case 'back': back(); return;
+    case 'home': S.stack=[]; S.screen='home'; render(); return;
+    case 'recents': return;
+    case 'todo': toast('Not built in this draft yet.'); render(); return;
+    case 'tg-bt': S.bt=!S.bt; break;
+    case 'tg-notif': S.notif=!S.notif; break;
+    case 'tg-loc': S.loc=!S.loc; break;
+    case 'tg-nearby': S.nearby=!S.nearby; break;
+    case 'tg-gr': S.gr=!S.gr; break;
+    case 'tg-low': S.low=!S.low; break;
+    case 'tg-share': S.shareOn=!S.shareOn; break;
+    case 'batt': S.batt = el.dataset.val; break;
+    case 'open-share': if(S.intro){ go('share'); } else { go('share-intro'); } return;
+    case 'intro-next': S.intro=true; S.screen='share'; break;
+    case 'invite-next':
+      if(!S.nick.trim()){ toast('Enter a nickname.'); break; }
+      if(!/^\S+@\S+\.\S+$/.test(S.email.trim())){ toast('Enter a valid email address.'); break; }
+      go('share-follower'); return;
+    case 'send-invite':
+      S.followers.push({nick:S.nick.trim(), email:S.email.trim()});
+      S.invited=true; S.shareOn=true; S.nick=''; S.email='';
+      S.stack=['g7']; S.tab='connections'; S.screen='share';
+      toast('Invitation sent.'); break;
+  }
+  render();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act],[data-go],[data-tab]');
+  if(!t) return;
+  if(t.dataset.go){ go(t.dataset.go); return; }
+  if(t.dataset.tab){ S.tab=t.dataset.tab; render(); return; }
+  act(t.dataset.act, t);
+});
+document.addEventListener('keydown', e => {
+  if((e.key==='Enter'||e.key===' ') && e.target.matches('.tg')){ e.preventDefault(); act(e.target.dataset.act, e.target); }
+});
+document.addEventListener('input', e => {
+  if(e.target.dataset.in){ S[e.target.dataset.in] = e.target.value; }
+});
+$('#bHome').onclick = () => act('home');
+$('#bReset').onclick = () => { S = fresh(); render(); };
+
+function fit(){
+  const k = Math.min(1, (window.innerWidth - 32) / 380);
+  $('#phone').style.transform = `scale(${k})`;
+  $('#scaler').style.width = (380*k)+'px';
+  $('#scaler').style.height = (800*k)+'px';
+}
+window.addEventListener('resize', fit);
+fit(); render();
+</script>
+</body>
+</html>
